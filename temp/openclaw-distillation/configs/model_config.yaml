@@ -1,0 +1,43 @@
+# configs/model_config.yaml
+
+# 教师模型配置（用于生成黄金答案）
+teacher:
+  model: qwen-max
+  max_tokens: 2000
+  temperature: 0.7
+
+# 学生模型配置（用于微调）
+student:
+  # 入门级（4-6GB GPU）
+  entry:
+    base_model: Qwen/Qwen-1.8B-Chat
+    quantization: 4bit
+    lora_r: 8
+    lora_alpha: 32
+  
+  # 进阶级（12-16GB GPU）
+  intermediate:
+    base_model: mistralai/Mistral-7B-Instruct-v0.1
+    quantization: 8bit
+    lora_r: 16
+    lora_alpha: 64
+  
+  # 专业级（24GB+ GPU）
+  professional:
+    base_model: codellama/CodeLlama-13b-Instruct-hf
+    quantization: none
+    lora_r: 16
+    lora_alpha: 64
+
+# 部署配置
+deployment:
+  # 本地部署（Ollama）
+  ollama:
+    port: 11434
+    model_name: qwen-distilled
+  
+  # API 部署（vLLM）
+  vllm:
+    port: 8000
+    tensor_parallel_size: 1
+    max_model_len: 2048

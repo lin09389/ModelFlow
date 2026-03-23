@@ -1,0 +1,58 @@
+{
+  "_comment": "混合模型路由配置文件",
+  "_version": "1.0.0",
+  
+  "enabled": true,
+  
+  "models": {
+    "small": {
+      "ref": "qwen/qwen-plus",
+      "maxTokens": 4000,
+      "costPer1kTokens": 0.002,
+      "description": "小模型 - 快速响应，适合简单问答"
+    },
+    "medium": {
+      "ref": "qwen/qwen-max",
+      "maxTokens": 16000,
+      "costPer1kTokens": 0.01,
+      "description": "中等模型 - 平衡性能与成本"
+    },
+    "large": {
+      "ref": "qwen/qwen-plus",
+      "maxTokens": 64000,
+      "costPer1kTokens": 0.05,
+      "description": "大模型 - 最强能力，适合复杂任务"
+    }
+  },
+
+  "strategy": "balanced",
+
+  "rules": {
+    "autoUpgrade": {
+      "enabled": true,
+      "thresholds": {
+        "wordCount": 500,
+        "complexityScore": 5
+      }
+    },
+    "autoDowngrade": {
+      "enabled": false,
+      "dailyBudget": 10,
+      "downgradeThreshold": 0.8
+    },
+    "overrideKeywords": {
+      "深度分析": "large",
+      "详细分析": "large",
+      "全面分析": "large",
+      "快速回答": "small",
+      "简单看看": "small",
+      "用大模型": "large",
+      "用小模型": "small"
+    }
+  },
+
+  "metrics": {
+    "enabled": true,
+    "logPath": "~/.openclaw/workspace/hybrid-model/logs/metrics.json"
+  }
+}

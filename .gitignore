@@ -1,0 +1,23 @@
+# Node modules
+node_modules/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# OpenClaw specific
+.openclaw/agents/*/agent/auth-profiles.json
+memory/chats/
+temp/recovery-*.json
+
+# IDE
+.vscode/
+.idea/
+
+# Build output
+dist/
+build/
