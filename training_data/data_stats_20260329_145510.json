@@ -1,0 +1,30 @@
+{
+  "timestamp": "20260329_145510",
+  "total_samples": 1198,
+  "triplet": {
+    "count": 498,
+    "categories": {
+      "small": 166,
+      "medium": 166,
+      "large": 166
+    }
+  },
+  "pair": {
+    "count": 400,
+    "task_types": {
+      "analysis": 76,
+      "chat": 71,
+      "writing": 97,
+      "question": 75,
+      "coding": 81
+    }
+  },
+  "sts": {
+    "count": 300,
+    "categories": {
+      "high": 82,
+      "medium": 201,
+      "low": 17
+    }
+  }
+}

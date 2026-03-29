@@ -1,5 +1,9 @@
 /**
- * 混合模型路由策略引擎
+ * 混合模型路由策略引擎 v2.0
+ * 
+ * 修复问题：
+ * - 关键词覆盖时考虑否定词
+ * - 支持分类器的置信度
  */
 
 const DEFAULT_CONFIG = {
@@ -21,6 +25,25 @@ const DEFAULT_CONFIG = {
   metrics: { enabled: true, logPath: "~/.openclaw/workspace/hybrid-model/logs/metrics.json" }
 };
 
+const NEGATION_WORDS = ['不', '无需', '不用', '不需要', '没必要', '别', '不要', "don't", "not", "no need"];
+
+function hasNegationBeforeKeyword(text, keyword) {
+  const keywordIndex = text.indexOf(keyword);
+  if (keywordIndex === -1) return false;
+  
+  const beforeKeyword = text.substring(0, keywordIndex);
+  for (const neg of NEGATION_WORDS) {
+    if (beforeKeyword.includes(neg)) {
+      const negIndex = beforeKeyword.lastIndexOf(neg);
+      const distance = keywordIndex - (negIndex + neg.length);
+      if (distance < 20) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 class HybridModelRouter {
   constructor(config = {}) {
     this.config = { ...DEFAULT_CONFIG, ...config };
@@ -29,8 +52,9 @@ class HybridModelRouter {
 
   route(message, classification) {
     this.metrics.totalRequests++;
-    const overrideModel = this.checkOverride(message);
-    if (overrideModel) return this.createResult(overrideModel, "用户关键词覆盖");
+    
+    const overrideModel = this.checkOverride(message, classification);
+    if (overrideModel) return this.createResult(overrideModel.level, overrideModel.reason, classification);
 
     let selectedLevel, reason;
     if (this.config.strategy === "cost-optimal") {
@@ -50,10 +74,24 @@ class HybridModelRouter {
     return result;
   }
 
-  checkOverride(message) {
+  checkOverride(message, classification) {
     const text = message.toLowerCase();
+    const originalText = message;
+    
     for (const [keyword, modelLevel] of Object.entries(this.config.rules.overrideKeywords)) {
-      if (text.includes(keyword.toLowerCase())) return modelLevel;
+      if (text.includes(keyword.toLowerCase())) {
+        if (hasNegationBeforeKeyword(originalText, keyword)) {
+          const oppositeLevel = modelLevel === 'large' ? 'small' : (modelLevel === 'small' ? 'medium' : 'small');
+          return {
+            level: classification?.level || oppositeLevel,
+            reason: `关键词"${keyword}"被否定，使用分类结果`
+          };
+        }
+        return {
+          level: modelLevel,
+          reason: `用户关键词覆盖：${keyword}`
+        };
+      }
     }
     return null;
   }
@@ -121,5 +159,5 @@ class HybridModelRouter {
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { HybridModelRouter, DEFAULT_CONFIG };
+  module.exports = { HybridModelRouter, DEFAULT_CONFIG, hasNegationBeforeKeyword };
 }
